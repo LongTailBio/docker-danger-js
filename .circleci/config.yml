@@ -21,6 +21,7 @@ jobs:
       - run:
           name: Build and push danger-js image
           environment:
+            DOCKER_ORG: metagenscope
             DOCKER_TAG: latest
             SERVICE_NAME: danger-js
           command: |
