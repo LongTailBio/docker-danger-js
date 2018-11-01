@@ -1,0 +1,38 @@
+version: 2
+
+jobs:
+  build_image:
+    docker:
+      - image: circleci/node:9.2.0
+
+    steps:
+      - checkout
+
+      - setup_remote_docker
+
+      - run:
+          name: Set COMMIT env var
+          command: echo 'export COMMIT=${CIRCLE_SHA1::8}' >> $BASH_ENV
+
+      - run:
+          name: Sign in to Docker Hub
+          command: docker login -u $DOCKER_ID -p $DOCKER_PASSWORD
+
+      - run:
+          name: Build and push danger-js image
+          environment:
+            DOCKER_TAG: latest
+            SERVICE_NAME: danger-js
+          command: |
+            docker build . -t $SERVICE_NAME:$COMMIT
+            docker tag $SERVICE_NAME:$COMMIT $DOCKER_ORG/$SERVICE_NAME:$DOCKER_TAG
+            docker tag $SERVICE_NAME:$COMMIT $DOCKER_ORG/$SERVICE_NAME:$COMMIT
+            docker push $DOCKER_ORG/$SERVICE_NAME
+
+workflows:
+  version: 2
+
+  docker:
+    jobs:
+      - build_image:
+          context: metagenscope-staging
